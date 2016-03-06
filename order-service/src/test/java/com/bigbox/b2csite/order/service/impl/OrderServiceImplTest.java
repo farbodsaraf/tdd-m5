@@ -81,13 +81,14 @@ public class OrderServiceImplTest {
 	public void test_openNewOrder_successfullyRetriesDataInsert() throws Exception {
 		
 		// Setup
-		
+		Mockito.when(mockOrderDao.insert(Mockito.any(OrderEntity.class)))
+				.thenThrow(new DataAccessException("First Ex")).thenReturn(1);
 		
 		// Execution
-
+		this.target.openNewOrder(CUSTOMER_ID);
 		
 		// Verification
-
+		Mockito.verify(mockOrderDao, Mockito.times(2)).insert(Mockito.any(OrderEntity.class));
 		
 	}
 	
@@ -96,13 +97,20 @@ public class OrderServiceImplTest {
 	public void test_openNewOrder_failedDataInsert() throws Exception {
 		
 		// Setup
-		
+		Mockito.when(mockOrderDao.insert(Mockito.any(OrderEntity.class)))
+				.thenThrow(new DataAccessException("First Ex"))
+				.thenThrow(new DataAccessException(("Second Ex")));
 
-		// Execution
-			
-
-		// Verification
-
+		try {
+			// Execution
+			this.target.openNewOrder(CUSTOMER_ID);
+		}
+		finally
+			{
+				// Verification
+				Mockito.verify(mockOrderDao, Mockito.times(2)).
+						insert(Mockito.any(OrderEntity.class));
+			}
 	}
 	
 	@Ignore
