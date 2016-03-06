@@ -112,18 +112,25 @@ public class OrderServiceImplTest {
 						insert(Mockito.any(OrderEntity.class));
 			}
 	}
-	
-	@Ignore
+
 	@Test
 	public void test_openNewOrder_success() throws Exception {
 		
 		// Setup
-
+		Mockito.when(mockOrderDao.insert(Mockito.any(OrderEntity.class)))
+				.thenReturn(1);
 		
 		// Execution
-
+		String orderNumber = this.target.openNewOrder(CUSTOMER_ID);
 		
 		// Verification
+		ArgumentCaptor<OrderEntity> orderEntityCaptor = ArgumentCaptor.forClass(OrderEntity.class);
+		Mockito.verify(mockOrderDao).insert(orderEntityCaptor.capture());
 
+		OrderEntity capturedOrderEntity = orderEntityCaptor.getValue();
+
+		Assert.assertNotNull(capturedOrderEntity);
+		Assert.assertEquals(CUSTOMER_ID, capturedOrderEntity.getCustomerId());
+		Assert.assertEquals(orderNumber, capturedOrderEntity.getOrderNumber());
 	}
 }
