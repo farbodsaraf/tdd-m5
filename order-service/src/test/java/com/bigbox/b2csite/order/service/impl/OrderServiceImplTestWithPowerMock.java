@@ -2,6 +2,7 @@ package com.bigbox.b2csite.order.service.impl;
 
 import java.util.LinkedList;
 
+import com.bigbox.b2csite.order.model.domain.OrderCompletionAudit;
 import com.bigbox.b2csite.order.model.message.OrderMessage;
 import org.apache.poi.ss.formula.functions.Match;
 import org.junit.Assert;
@@ -20,7 +21,7 @@ import com.bigbox.b2csite.order.model.entity.OrderItemEntity;
 import com.bigbox.b2csite.order.model.transformer.OrderEntityToOrderSummaryTransformer;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(value={WarehouseManagementService.class})
+@PrepareForTest(value={WarehouseManagementService.class, OrderServiceImpl.class})
 public class OrderServiceImplTestWithPowerMock {
 
 	private final static long CUSTOMER_ID = 1;
@@ -65,7 +66,12 @@ public class OrderServiceImplTestWithPowerMock {
 		// Add static mocking here
 		PowerMockito.mockStatic(WarehouseManagementService.class);
 		PowerMockito.when(WarehouseManagementService.sendOrder(Matchers.any(OrderMessage.class))).thenReturn(true);
-		
+
+		OrderCompletionAudit orderCompletionAudit = new OrderCompletionAudit();
+
+		PowerMockito.whenNew(OrderCompletionAudit.class).withNoArguments()
+				.thenReturn(orderCompletionAudit);
+
 		// Execution
 		target.completeOrder(ORDER_ID);
 		
@@ -80,6 +86,9 @@ public class OrderServiceImplTestWithPowerMock {
 
 		Assert.assertNotNull(capturedOrderMessage);
 		Assert.assertEquals(ORDER_NUMBER, capturedOrderMessage.getOrderNumber());
+
+		Assert.assertEquals(ORDER_NUMBER, orderCompletionAudit.getOrderNumber());
+		Assert.assertNotNull(orderCompletionAudit.getCompletionDate());
 
 	}
 }
